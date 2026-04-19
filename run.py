@@ -5,7 +5,7 @@ from contact_extractor import extract_contact_info
 from metrics_extractor import extract_metrics
 from semantic_engine import calculate_match_score
 from gap_analyzer import analyze_skill_gap
-from interview_bot import generate_interview_questions
+from interview_bot import generate_premium_analysis
 # 1. Download a sample PDF resume from the internet.
 # 2. Rename it to 'sample.pdf' and place it in this exact folder.
 resume_file = "sample.pdf"
@@ -77,7 +77,7 @@ hybrid_score = round(
 2)
 
 # --- 4. MOCK INTERVIEW GENERATION ---
-interview_output = generate_interview_questions(candidate_skills, missing_tech)
+interview_output = generate_premium_analysis(candidate_skills, missing_tech,clean_resume)
 
 # --- FINAL SYSTEM OUTPUT ---
 print("\n=========================================")
