@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+  <head>
+    <title>JD + Resume Upload Test</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 40px;
+        background: #f4f4f4;
+      }
+
+      .box {
+        background: white;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #ccc;
+      }
+
+      label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      button {
+        padding: 10px 20px;
+        background: green;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      button:hover {
+        background: darkgreen;
+      }
+
+      pre {
+        background: black;
+        color: lime;
+        padding: 15px;
+        border-radius: 10px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>🚀 Node → Python Upload Test</h1>
+
+    <!-- 📄 JOB DESCRIPTION SECTION -->
+    <div class="box">
+      <label>📄 Upload Job Description (JD PDF)</label>
+      <input type="file" id="jdFile" />
+    </div>
+
+    <!-- 📑 RESUME SECTION -->
+    <div class="box">
+      <label>📑 Upload Resumes (you can select multiple)</label>
+      <input type="file" id="resumeFiles" multiple />
+      <p style="color: gray">
+        Hold Ctrl (Windows) / Cmd (Mac) to select multiple resumes
+      </p>
+    </div>
+
+    <!-- 🚀 SUBMIT -->
+    <div class="box">
+      <button onclick="sendData()">Send to Backend</button>
+    </div>
+
+    <!-- 📊 OUTPUT -->
+    <div class="box">
+      <h3>📊 Response</h3>
+      <pre id="output">Waiting for response...</pre>
+    </div>
+
+    <script>
+     async function sendData(event) {
+  if (event) event.preventDefault();
+
+  console.log("🔥 Frontend function started");
+
+  const jd = document.getElementById("jdFile").files[0];
+  const resumes = document.getElementById("resumeFiles").files;
+
+  const formData = new FormData();
+  formData.append("jd_pdf", jd);
+
+  for (let file of resumes) {
+    formData.append("resumes", file);
+  }
+
+  try {
+    const res = await fetch("http://localhost:3000/api/proxy/analyze", {
+      method: "POST",
+      body: formData
+    });
+
+    console.log("📡 Response status:", res.status);
+
+    const data = await res.json();
+
+    console.log("📦 DATA RECEIVED:", data);
+
+    alert("Frontend got response"); // 🔥 IMPORTANT TEST
+
+    document.getElementById("output").textContent =
+      JSON.stringify(data, null, 2);
+
+  } catch (err) {
+    console.error("❌ ERROR:", err);
+  }
+}
+    </script>
+
+    <!-- <script>
+    async function sendData() {
+
+      const jd = document.getElementById("jdFile").files[0];
+      const resumes = document.getElementById("resumeFiles").files;
+
+      if (!jd) {
+        alert("Please upload JD file");
+        return;
+      }
+
+      if (resumes.length === 0) {
+        alert("Please upload at least 1 resume");
+        return;
+      }
+
+      const formData = new FormData();
+
+      // 📄 JD file
+      formData.append("jd_pdf", jd);
+
+      // 📑 Resumes
+      for (let file of resumes) {
+        formData.append("resumes", file);
+      }
+
+      try {
+        const res = await fetch("http://localhost:3000/api/proxy/analyze", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+
+        document.getElementById("output").textContent =
+          JSON.stringify(data, null, 2);
+
+      } catch (err) {
+        document.getElementById("output").textContent =
+          "Error: " + err.message;
+      }
+    }
+  </script> -->
+  </body>
+</html>
