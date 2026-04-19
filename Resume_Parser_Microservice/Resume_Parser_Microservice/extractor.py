@@ -1,28 +1,19 @@
-import pdfplumber
+import pypdfium2 as pdfium
 
-def extract_text_from_pdf(pdf_path):
+def extract_text_from_pdf(pdf_path: str) -> str:
     """
-    Ingests a PDF file and returns the extracted raw text.
-    Designed to be imported by the main backend server.
+    Handles PDF extraction using a context manager to avoid 
+    Windows file-locking (PermissionError) and null-pointer crashes.
     """
-    extracted_text = ""
-    
+    text = ""
     try:
-        # The 'with' context manager ensures the file is safely closed after reading,
-        # preventing memory leaks on the server.
-        with pdfplumber.open(pdf_path) as pdf:
-            for page in pdf.pages:
-                text = page.extract_text()
-                # Some pages might be images or blank, so we check if text exists
-                if text:
-                    extracted_text += text + "\n"
-                    
-        if not extracted_text.strip():
-            return "ERROR: No readable text found. The PDF might be image-based."
-            
-        return extracted_text.strip()
-        
-    except FileNotFoundError:
-        return f"ERROR: The file at {pdf_path} was not found."
+        # The 'with' block ensures the file handle is closed automatically
+        with pdfium.PdfDocument(pdf_path) as pdf:
+            for i in range(len(pdf)):
+                page = pdf.get_page(i)
+                text_page = page.get_textpage()
+                text += text_page.get_text_range() + "\n"
     except Exception as e:
-        return f"CRITICAL ERROR: {str(e)}"
+        print(f"🚨 Extraction Error: {e}")
+    
+    return text
