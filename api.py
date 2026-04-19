@@ -7,6 +7,7 @@ from typing import List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+import uuid
 
 # Import your custom modules
 from extractor import extract_text_from_pdf
@@ -239,6 +240,9 @@ def process_candidate(resume_file, jd_skills, clean_jd, weights, index, min_gpa_
     temp_path = f"temp_{os.getpid()}_{index}_{resume_file.filename}"
     
     try:
+        # CRITICAL FIX: Reset the file pointer to the beginning
+        resume_file.file.seek(0)
+
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(resume_file.file, buffer)
 
@@ -314,7 +318,8 @@ async def analyze_bulk(
         time.sleep(1.5)
         return get_demo_response()
 
-    jd_temp = "temp_jd.pdf"
+    jd_temp = f"temp_jd_{uuid.uuid4().hex}.pdf"
+    jd_pdf.file.seek(0)#resets the file pointer to the beginning
     with open(jd_temp, "wb") as buffer:
         shutil.copyfileobj(jd_pdf.file, buffer)
     
@@ -336,12 +341,12 @@ async def analyze_bulk(
 
     weights = {"gpa": w_gpa, "tech": w_tech, "semantic": w_sem}
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(resumes)) as executor:
-        futures = [
-            executor.submit(process_candidate, res, jd_skills, clean_jd, weights, index, min_gpa_required) 
-            for index, res in enumerate(resumes)
-        ]
-        results = [f.result() for f in futures]
+    # REMOVE the concurrent.futures block and use this:
+    results = []
+    for index, res in enumerate(resumes):
+        print(f"[*] Processing {res.filename}...")
+        result = process_candidate(res, jd_skills, clean_jd, weights, index, min_gpa_required)
+        results.append(result)
 
     return {
         "batch_info": {

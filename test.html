@@ -22,7 +22,7 @@
 <div class="container">
     <h2>System Architect: Recruitment AI</h2>
     
-    <form action="http://127.0.0.1:8000/analyze-bulk" method="post" enctype="multipart/form-data">
+    <form id="analysisForm">
         
         <div class="form-group">
             <label>1. Target Job Description (PDF)</label>
@@ -59,6 +59,41 @@
         <button type="submit">Execute System Analysis</button>
     </form>
 </div>
+<script>
+document.getElementById('analysisForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); 
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    // Create a results div if it doesn't exist
+    let resultsDiv = document.getElementById('resultsOutput');
+    if (!resultsDiv) {
+        resultsDiv = document.createElement('pre');
+        resultsDiv.id = 'resultsOutput';
+        resultsDiv.style = "background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #475569; margin-top: 20px; white-space: pre-wrap; word-wrap: break-word;";
+        this.appendChild(resultsDiv);
+    }
 
+    submitBtn.innerText = "Processing... Please Wait";
+    submitBtn.disabled = true;
+    resultsDiv.innerText = "Loading AI Analysis...";
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/analyze-bulk', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        // Print the JSON directly to the webpage!
+        resultsDiv.innerText = JSON.stringify(data, null, 2); 
+    } catch (error) {
+        resultsDiv.innerText = "API ERROR: Check your Python terminal.";
+    } finally {
+        submitBtn.innerText = "Execute System Analysis";
+        submitBtn.disabled = false;
+    }
+});
+</script>
 </body>
 </html>

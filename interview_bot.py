@@ -21,9 +21,9 @@ def generate_premium_analysis(skills, missing_skills, resume_text):
     Missing Skills from JD: {missing_skills}
     Resume Text: {resume_text}
 
-    Provide your analysis strictly in the following JSON format:
+    Provide your analysis strictly in the following JSON format.
     {{
-        "quality_score": 85,
+        "quality_score": "REPLACE_WITH_CALCULATED_INTEGER", 
         "suggestions": ["actionable feedback 1", "actionable feedback 2", "actionable feedback 3"],
         "fraud_alerts": [],
         "interview_questions": ["question 1", "question 2", "question 3"]
@@ -34,7 +34,10 @@ def generate_premium_analysis(skills, missing_skills, resume_text):
     2. The "suggestions" array MUST contain exactly 3 actionable improvements.
     3. The "interview_questions" array MUST contain exactly 3 to 5 technical questions.
     4. Every single question MUST be strictly 20 words or less. Be concise.
+    5. The "quality_score" MUST NOT be copied from the template. You must dynamically calculate an integer between 1 and 100 representing the candidate's actual technical fit for the role based on the missing skills.
+    6. The "quality_score" MUST be returned as a raw JSON integer, NOT a string. You must replace the placeholder text with your calculated integer between 1 and 100.
     """
+
 
     try:
         chat_completion = client.chat.completions.create(
