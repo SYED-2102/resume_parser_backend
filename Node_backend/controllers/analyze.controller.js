@@ -1,5 +1,6 @@
 import axios from "axios";
 import FormData from "form-data";
+import Analysis from "../models/analysis.model.js";
 
 export const analyzeResumes = async (req, res) => {
   try {
@@ -63,6 +64,10 @@ export const analyzeResumes = async (req, res) => {
     console.log("📊 Response keys:", Object.keys(response.data));
     console.log("📥 Response from Python received");
     console.log("📤 Sending response back to frontend");
+
+    const saved = await Analysis.create(response.data);
+
+    console.log("💾 Saved to MongoDB:", saved._id);
 
     return res.json(response.data);
   } catch (error) {
