@@ -4,7 +4,7 @@ import Analysis from "../models/analysis.model.js";
 
 export const analyzeResumes = async (req, res) => {
   try {
-    console.log("🔥 Request reached controller");
+    console.log(" Request reached controller");
     // ❗ FIX: field name must match "jd_pdf"
     if (!req.files?.jd_pdf || req.files.jd_pdf.length === 0) {
       return res.status(400).json({ error: "JD file is required" });
@@ -13,8 +13,8 @@ export const analyzeResumes = async (req, res) => {
     const jdFile = req.files.jd_pdf[0];
     const resumeFiles = req.files.resumes || [];
 
-    console.log("📦 JD file:", req.files?.jd_pdf?.length);
-    console.log("📦 Resume files:", req.files?.resumes?.length);
+    console.log(" JD file:", req.files?.jd_pdf?.length);
+    console.log(" Resume files:", req.files?.resumes?.length);
 
     // Validate JD
     if (jdFile.mimetype !== "application/pdf") {
@@ -48,26 +48,24 @@ export const analyzeResumes = async (req, res) => {
       });
     }
 
-    console.log("📤 Sending to Python...");
+    console.log(" Sending to Python...");
     // Call FastAPI
     const response = await axios.post(
       "http://127.0.0.1:8000/analyze-bulk",
       formData,
       {
         headers: formData.getHeaders(),
-        // maxContentLength: Infinity,
-        // maxBodyLength: Infinity,
-        // timeout: 60000,
+        
       },
     );
-    console.log("📥 Python response received");
-    console.log("📊 Response keys:", Object.keys(response.data));
-    console.log("📥 Response from Python received");
-    console.log("📤 Sending response back to frontend");
+    console.log(" Python response received");
+    console.log(" Response keys:", Object.keys(response.data));
+    console.log(" Response from Python received");
+    console.log(" Sending response back to frontend");
 
     const saved = await Analysis.create(response.data);
 
-    console.log("💾 Saved to MongoDB:", saved._id);
+    console.log("Saved to MongoDB:", saved._id);
 
     return res.json(response.data);
   } catch (error) {
