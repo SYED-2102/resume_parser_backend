@@ -70,7 +70,13 @@
                             </div>
                         </div>
                     </div>
-
+                    <div class="mt-5 p-3 bg-sky-50 dark:bg-slate-800/50 border border-sky-200 dark:border-sky-900/50 rounded-lg flex items-center gap-3">
+                        <input type="checkbox" name="demo_mode" value="true" id="demo_mode" class="w-5 h-5 text-primary bg-white border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600 cursor-pointer">
+                        <div>
+                            <label for="demo_mode" class="text-sm font-bold text-sky-800 dark:text-sky-300 cursor-pointer select-none">Enable Presentation Demo Mode</label>
+                            <p class="text-xs text-sky-600 dark:text-sky-500 mt-0.5">Bypasses LLM latency and returns instant high-fidelity mock data.</p>
+                        </div>
+                    </div>
                     <button type="submit" id="submitBtn" class="w-full py-3 mt-4 bg-primary text-darkBg font-bold rounded-lg hover:bg-sky-500 transition shadow-lg shadow-sky-500/30 uppercase tracking-wide text-sm">
                         Execute Pipeline
                     </button>
