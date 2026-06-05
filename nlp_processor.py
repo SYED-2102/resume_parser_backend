@@ -11,9 +11,38 @@ ruler=nlp.add_pipe("entity_ruler",before="ner")
 #2 build the hardcoded knowledge base
 #in a real enterprise app, this would be a database of 10,000+ skills
 #we are starting with a core subset to prove the architecture
-tech_skills = ["C", "C++", "JavaScript", "HTML5", "CSS3", "Bootstrap", "Bootstrap 5", 
-               "DOM Manipulation", "Fetch API", "Data Structures", "Algorithms", 
-               "OOP", "Database Management", "Machine Learning", "Python", "SQL"]
+#2 build the hardcoded knowledge base
+#in a real enterprise app, this would be a database of 10,000+ skills
+#we are starting with a core subset to prove the architecture
+tech_skills = [
+    # Core CS & Languages
+    "C", "C++", "Java", "Python", "JavaScript", "TypeScript", "Go", "Rust", "Ruby", "PHP", 
+    "Data Structures", "Algorithms", "Object-Oriented Programming", "OOP", "Design Patterns",
+    "System Design", "Microservices", "REST API", "GraphQL",
+    
+    # Frontend
+    "HTML", "HTML5", "CSS", "CSS3", "React", "React.js", "Angular", "Vue.js", "Next.js", 
+    "Tailwind CSS", "Bootstrap", "Bootstrap 5", "DOM Manipulation", "Fetch API", "Redux", "Webpack",
+    
+    # Backend & Frameworks
+    "Node.js", "Express.js", "Django", "Flask", "FastAPI", "Spring Boot", ".NET", "Laravel",
+    
+    # Databases
+    "SQL", "MySQL", "PostgreSQL", "MongoDB", "NoSQL", "Redis", "Cassandra", "Oracle",
+    "Database Management", "Elasticsearch",
+    
+    # Cloud & DevOps
+    "AWS", "Amazon Web Services", "Azure", "Google Cloud Platform", "GCP", "Docker", "Kubernetes",
+    "CI/CD", "Jenkins", "GitHub Actions", "Terraform", "Linux", "Bash", "Shell Scripting", "Nginx",
+    
+    # AI / Data Science
+    "Machine Learning", "Deep Learning", "Artificial Intelligence", "Natural Language Processing",
+    "NLP", "TensorFlow", "PyTorch", "Scikit-Learn", "Pandas", "NumPy", "Data Analytics",
+    "Computer Vision", "LLM", "Generative AI",
+    
+    # Tools & Methodologies
+    "Git", "GitHub", "GitLab", "Jira", "Agile", "Scrum", "TDD", "Test Driven Development"
+]
 # 3. Create the pattern matching rules
 patterns=[]
 for skill in tech_skills:
