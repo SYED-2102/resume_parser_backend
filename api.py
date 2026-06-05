@@ -35,16 +35,21 @@ app.add_middleware(
 def extract_min_gpa(jd_text: str) -> float:
     text = str(jd_text).lower()
     
-    # Nuclear Option: Find the requirement anywhere in the text
-    if "8.5" in text or "85%" in text:
-        return 8.5
-        
-    # Regex fallback for other documents
-    match = re.search(r'(?:cgpa|gpa|minimum).*?(\d{1,2}\.\d{1,2})', text)
-    if match:
-        val = float(match.group(1))
-        if 1.0 < val <= 10.0: return val
+    # 1. Capture percentage requirements (e.g., "85%") and convert to 10.0 scale
+    percent_match = re.search(r'(\d{2})(?:\s*)%', text)
+    if percent_match:
+        val = float(percent_match.group(1)) / 10.0
+        if 1.0 < val <= 10.0: 
+            return val
+            
+    # 2. Capture standard decimal GPA requirements (e.g., "gpa 8.5")
+    decimal_match = re.search(r'(?:cgpa|gpa|minimum).*?(\d{1,2}\.\d{1,2})', text)
+    if decimal_match:
+        val = float(decimal_match.group(1))
+        if 1.0 < val <= 10.0: 
+            return val
 
+    # Default fallback
     return 7.0
 
 def get_gpa_float(gpa_str):
