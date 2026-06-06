@@ -317,9 +317,9 @@ async def analyze_bulk(
     w_gpa: float = Form(0.3),
     w_tech: float = Form(0.5),
     w_sem: float = Form(0.2),
-    demo_mode: bool = Form(False)
+    demo_mode: str = Form("false")
 ):
-    if demo_mode:
+    if demo_mode=="true":
         time.sleep(1.5)
         return get_demo_response()
 

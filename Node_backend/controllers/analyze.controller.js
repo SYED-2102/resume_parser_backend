@@ -47,6 +47,10 @@ export const analyzeResumes = async (req, res) => {
         contentType: file.mimetype,
       });
     }
+    formData.append("w_gpa", req.body.w_gpa);
+    formData.append("w_tech", req.body.w_tech);
+    formData.append("w_sem", req.body.w_sem);
+    formData.append("demo_mode", req.body.demo_mode);
 
     console.log(" Sending to Python...");
     // Call FastAPI
@@ -55,7 +59,6 @@ export const analyzeResumes = async (req, res) => {
       formData,
       {
         headers: formData.getHeaders(),
-        
       },
     );
     console.log(" Python response received");
