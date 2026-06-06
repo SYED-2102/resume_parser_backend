@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recruitment Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#38bdf8',
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 3.8; }
+        .dark .circle-bg { stroke: #334155; }
+        .circle { fill: none; stroke-width: 2.8; stroke-linecap: round; transition: stroke-dasharray 1s ease-out; }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-darkBg text-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen font-sans">
+
+    <header class="bg-white dark:bg-darkCard shadow-md p-4 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tight text-primary">AI Recruitment Architect</h1>
+            <button id="themeToggle" class="p-2 rounded-lg bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 transition">
+                <span id="themeIcon">☀️ Light Mode</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-1">
+            <div class="bg-white dark:bg-darkCard p-6 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700">
+                <h2 class="text-xl font-semibold mb-4 border-b border-gray-200 dark:border-slate-700 pb-2">Analysis Parameters</h2>
+                
+                <form id="analysisForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">Target Job Description</label>
+                        <input type="file" name="jd_pdf" accept="application/pdf" required class="w-full text-sm p-2 rounded bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 focus:outline-none focus:border-primary">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">Candidate Resumes (Max 10)</label>
+                        <input type="file" name="resumes" accept="application/pdf" multiple required class="w-full text-sm p-2 rounded bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-600 focus:outline-none focus:border-primary">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-600 dark:text-gray-400">Heuristic Weights (Sum = 1.0)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-xs text-gray-500">GPA</label>
+                                <input type="number" name="w_gpa" step="0.1" value="0.3" min="0" max="1" class="w-full p-2 rounded bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-600">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Tech</label>
+                                <input type="number" name="w_tech" step="0.1" value="0.5" min="0" max="1" class="w-full p-2 rounded bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-600">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Semantic</label>
+                                <input type="number" name="w_sem" step="0.1" value="0.2" min="0" max="1" class="w-full p-2 rounded bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-600">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5 p-3 bg-sky-50 dark:bg-slate-800/50 border border-sky-200 dark:border-sky-900/50 rounded-lg flex items-center gap-3">
+                        <input type="checkbox" name="demo_mode" value="true" id="demo_mode" class="w-5 h-5 text-primary bg-white border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600 cursor-pointer">
+                        <div>
+                            <label for="demo_mode" class="text-sm font-bold text-sky-800 dark:text-sky-300 cursor-pointer select-none">Enable Presentation Demo Mode</label>
+                            <p class="text-xs text-sky-600 dark:text-sky-500 mt-0.5">Bypasses LLM latency and returns instant high-fidelity mock data.</p>
+                        </div>
+                    </div>
+                    <button type="submit" id="submitBtn" class="w-full py-3 mt-4 bg-primary text-darkBg font-bold rounded-lg hover:bg-sky-500 transition shadow-lg shadow-sky-500/30 uppercase tracking-wide text-sm">
+                        Execute Pipeline
+                    </button>
+                    <p id="statusText" class="text-xs text-center text-gray-500 mt-2 hidden">Processing AI Models...</p>
+                </form>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6" id="resultsContainer">
+            
+            <div class="flex items-center justify-center h-64 bg-white dark:bg-darkCard rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm" id="emptyState">
+                <p class="text-gray-500 dark:text-slate-400">Awaiting document ingestion...</p>
+            </div>
+
+            <div id="rankedCandidates" class="space-y-4 hidden">
+                <h3 class="text-2xl font-bold text-green-500">Shortlisted Candidates</h3>
+                </div>
+
+            <div id="rejectedCandidates" class="space-y-4 hidden mt-8">
+                <h3 class="text-2xl font-bold text-red-500 border-t border-gray-200 dark:border-slate-700 pt-6">Rejected Profiles</h3>
+                </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Theme Toggle Logic
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+
+        themeToggle.addEventListener('click', () => {
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                themeIcon.innerText = '🌙 Dark Mode';
+            } else {
+                html.classList.add('dark');
+                themeIcon.innerText = '☀️ Light Mode';
+            }
+        });
+
+        // Form Submit & Data Handling
+        document.getElementById('analysisForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            
+            const formData = new FormData(this);
+            const submitBtn = document.getElementById('submitBtn');
+            const statusText = document.getElementById('statusText');
+            const emptyState = document.getElementById('emptyState');
+            const rankedContainer = document.getElementById('rankedCandidates');
+            const rejectedContainer = document.getElementById('rejectedCandidates');
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            statusText.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            
+            // Clear previous results
+            rankedContainer.innerHTML = '<h3 class="text-2xl font-bold text-green-500 mb-4">Shortlisted Candidates</h3>';
+            rejectedContainer.innerHTML = '<h3 class="text-2xl font-bold text-red-500 border-t border-gray-200 dark:border-slate-700 pt-6 mb-4">Rejected Profiles</h3>';
+
+            try {
+                // Ensure this points to the correct Node.js or FastAPI port depending on your final architecture
+                const response = await fetch('http://localhost:3000/api/proxy/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                renderResults(data);
+
+            } catch (error) {
+                emptyState.classList.remove('hidden');
+                emptyState.innerHTML = `<p class="text-red-500 font-bold">API Connection Failed. Ensure backend is running.</p>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                statusText.classList.add('hidden');
+            }
+        });
+
+        function renderResults(data) {
+            const rankedContainer = document.getElementById('rankedCandidates');
+            const rejectedContainer = document.getElementById('rejectedCandidates');
+
+            // Render Ranked
+            if (data.ranked_candidates && data.ranked_candidates.length > 0) {
+                rankedContainer.classList.remove('hidden');
+                data.ranked_candidates.forEach((candidate, index) => {
+                    const score = (candidate.analytics.final_score).toFixed(1);
+                    const strokeDash = `${score}, 100`;
+                    const colorClass = score >= 75 ? 'stroke-green-500' : score >= 60 ? 'stroke-yellow-500' : 'stroke-orange-500';
+
+                    const card = `
+                    <div class="bg-white dark:bg-darkCard p-6 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col md:flex-row gap-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-primary text-darkBg text-xs font-bold px-3 py-1 rounded-bl-lg">Rank #${index + 1}</div>
+                        
+                        <div class="flex flex-col items-center justify-center min-w-[120px]">
+                            <svg viewBox="0 0 36 36" class="w-24 h-24">
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path class="circle ${colorClass}" stroke-dasharray="${strokeDash}" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <text x="18" y="20.35" class="fill-gray-800 dark:fill-white text-[10px] font-bold text-center" text-anchor="middle">${score}%</text>
+                            </svg>
+                            <span class="text-xs text-gray-500 mt-2">Overall Match</span>
+                        </div>
+
+                        <div class="flex-1 space-y-4">
+                            <div>
+                                <h4 class="text-xl font-bold">${candidate.dossier.name}</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">GPA: ${candidate.dossier.gpa} | File: ${candidate.filename}</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h5 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Found Skills</h5>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${candidate.analytics.skills_found.slice(0, 8).map(s => `<span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full">${s}</span>`).join('')}
+                                        ${candidate.analytics.skills_found.length > 8 ? `<span class="px-2 py-1 text-xs text-gray-500">+${candidate.analytics.skills_found.length - 8} more</span>` : ''}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Missing Skills</h5>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${candidate.analytics.missing_skills.map(s => `<span class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs rounded-full">${s}</span>`).join('')}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-lg border border-gray-200 dark:border-slate-700 mt-2">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="text-sm font-bold text-primary">AI Recruiter Insights</h5>
+                                    <span class="text-xs font-mono bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">Quality Score: ${candidate.premium_insights.quality_score}/100</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="text-xs font-semibold text-gray-500 mb-1">Recommended Interview Questions:</p>
+                                        <ul class="list-disc pl-4 text-sm space-y-1 text-gray-700 dark:text-gray-300">
+                                            ${candidate.premium_insights.interview_questions.map(q => `<li>${q}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-semibold text-gray-500 mb-1">Candidate Suggestions:</p>
+                                        <ul class="list-disc pl-4 text-sm space-y-1 text-gray-700 dark:text-gray-300">
+                                            ${candidate.premium_insights.suggestions.map(s => `<li>${s}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                    rankedContainer.innerHTML += card;
+                });
+            }
+
+            // Render Rejected
+            if (data.rejected_candidates && data.rejected_candidates.length > 0) {
+                rejectedContainer.classList.remove('hidden');
+                data.rejected_candidates.forEach(candidate => {
+                    const card = `
+                    <div class="bg-white dark:bg-darkCard p-4 rounded-xl border-l-4 border-red-500 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h4 class="font-bold text-gray-800 dark:text-gray-200">${candidate.dossier.name !== "Name Not Found" ? candidate.dossier.name : candidate.filename}</h4>
+                            <p class="text-sm text-red-500">Rejection Reason: ${candidate.reason}</p>
+                            <p class="text-xs text-gray-500 mt-1">Recorded GPA: ${candidate.dossier.gpa}</p>
+                        </div>
+                        <div class="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">Better luck next time.</span>
+                        </div>
+                    </div>
+                    `;
+                    rejectedContainer.innerHTML += card;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

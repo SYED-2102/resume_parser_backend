@@ -4,6 +4,8 @@ import cors from "cors";
 import analyzeRoutes from "./routes/analyze.route.js";
 import { connectDB } from "./config/db.js";
 
+import historyRoutes from "./routes/history.route.js";
+
 
 const app = express();
 
@@ -11,6 +13,7 @@ app.use(cors());
 
 // Routes
 app.use("/api/proxy", analyzeRoutes);
+app.use("/api/history", historyRoutes);
 
 // Start server
 const PORT = 3000;
